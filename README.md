@@ -43,6 +43,7 @@ npm install
 ```
 ELEVENLABS_API_KEY=your_elevenlabs_api_key
 FAL_API_KEY=your_fal_api_key
+NEXT_PUBLIC_OPENAI_API_KEY`: your_OpenAI_api_key
 ```
 
 4. Create required directories:
@@ -66,7 +67,7 @@ npm run dev
 4. Add the following environment variables in the Vercel project settings:
    - `ELEVENLABS_API_KEY`
    - `FAL_API_KEY`
-   -`NEXT_PUBLIC_OPENAI_API_KEY`
+   - `NEXT_PUBLIC_OPENAI_API_KEY`
 
 5. Deploy the project
 
@@ -74,7 +75,7 @@ npm run dev
 
 - `ELEVENLABS_API_KEY`: Your ElevenLabs API key
 - `FAL_API_KEY`: Your FAL.ai API key
--`NEXT_PUBLIC_OPENAI_API_KEY`: Your OpenAI API key
+- `NEXT_PUBLIC_OPENAI_API_KEY`: Your OpenAI API key
 ## Project Structure
 
 ```
