@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+select, option {
+  background-color: #fff;
+  color: #222;
+}
+
+select:focus, option:focus {
+  background-color: #f0f0f0;
+  color: #222;
+}
