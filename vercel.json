@@ -4,7 +4,7 @@
       "src": "package.json",
       "use": "@vercel/next",
       "config": {
-        "buildCommand": "npm install && npm run build"
+        "buildCommand": "apt-get update && apt-get install -y python3 && ln -s /usr/bin/python3 /usr/bin/python && npm install && npm run build"
       }
     }
   ],
