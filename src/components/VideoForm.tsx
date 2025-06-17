@@ -3,100 +3,83 @@
 import { useState } from 'react';
 
 interface VideoFormProps {
-  onSubmit: (videoFile: File, targetLanguage: string) => void;
+  onSubmit: (videoUrl: string, targetLanguage: string) => void;
   isProcessing: boolean;
 }
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
+  { code: 'zh', name: 'Chinese (Mandarin)' },
   { code: 'hi', name: 'Hindi' },
   { code: 'es', name: 'Spanish' },
   { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'it', name: 'Italian' },
-  { code: 'pt', name: 'Portuguese' },
+  { code: 'ar', name: 'Arabic' },
+  { code: 'bn', name: 'Bengali' },
   { code: 'ru', name: 'Russian' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'ur', name: 'Urdu' },
+  { code: 'id', name: 'Indonesian' },
+  { code: 'de', name: 'German' },
   { code: 'ja', name: 'Japanese' },
+  { code: 'sw', name: 'Swahili' },
+  { code: 'mr', name: 'Marathi' },
+  { code: 'te', name: 'Telugu' },
+  { code: 'tr', name: 'Turkish' },
+  { code: 'ta', name: 'Tamil' },
+  { code: 'vi', name: 'Vietnamese' },
   { code: 'ko', name: 'Korean' },
+  { code: 'fa', name: 'Persian' },
+  { code: 'it', name: 'Italian' },
+  { code: 'th', name: 'Thai' },
+  { code: 'gu', name: 'Gujarati' },
+  { code: 'pl', name: 'Polish' },
+  { code: 'uk', name: 'Ukrainian' },
+  { code: 'ro', name: 'Romanian' },
+  { code: 'nl', name: 'Dutch' },
+  { code: 'ms', name: 'Malay' },
+  { code: 'pa', name: 'Punjabi' },
 ];
 
 export function VideoForm({ onSubmit, isProcessing }: VideoFormProps) {
-  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string>('');
   const [targetLanguage, setTargetLanguage] = useState('en');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setVideoFile(file);
-      // Create preview URL
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    }
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setVideoUrl(url);
+    // For Instagram reels, we can't create a preview URL directly
+    // The preview will be shown after the video is downloaded
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (videoFile) {
-      onSubmit(videoFile, targetLanguage);
+    if (videoUrl) {
+      onSubmit(videoUrl, targetLanguage);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="videoFile" className="block text-sm font-medium text-gray-700">
-          Upload Video
+        <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700">
+          Instagram Reel URL
         </label>
-        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-          <div className="space-y-1 text-center">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              stroke="currentColor"
-              fill="none"
-              viewBox="0 0 48 48"
-              aria-hidden="true"
-            >
-              <path
-                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <div className="flex text-sm text-gray-600">
-              <label
-                htmlFor="videoFile"
-                className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
-              >
-                <span>Upload a video</span>
-                <input
-                  id="videoFile"
-                  name="videoFile"
-                  type="file"
-                  accept="video/*"
-                  className="sr-only"
-                  onChange={handleFileChange}
-                  disabled={isProcessing}
-                />
-              </label>
-              <p className="pl-1">or drag and drop</p>
-            </div>
-            <p className="text-xs text-gray-500">MP4, MOV up to 100MB</p>
-          </div>
+        <div className="mt-1">
+          <input
+            type="url"
+            id="videoUrl"
+            name="videoUrl"
+            value={videoUrl}
+            onChange={handleUrlChange}
+            placeholder="https://www.instagram.com/reel/..."
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            disabled={isProcessing}
+          />
         </div>
-        {previewUrl && (
-          <div className="mt-4">
-            <video
-              src={previewUrl}
-              controls
-              className="w-full rounded-lg shadow-lg"
-              style={{ maxHeight: '200px' }}
-            >
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        )}
+        <p className="mt-2 text-sm text-gray-500">
+          Paste the URL of the Instagram reel you want to translate
+        </p>
       </div>
 
       <div>
@@ -120,9 +103,9 @@ export function VideoForm({ onSubmit, isProcessing }: VideoFormProps) {
 
       <button
         type="submit"
-        disabled={isProcessing || !videoFile}
+        disabled={isProcessing || !videoUrl}
         className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-          isProcessing || !videoFile
+          isProcessing || !videoUrl
             ? 'bg-blue-400 cursor-not-allowed'
             : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
         }`}

@@ -15,6 +15,7 @@ interface QueueStatus {
 const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const FAL_API_KEY = process.env.FAL_API_KEY;
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 
 // Configure FAL.ai client
 fal.config({
@@ -24,18 +25,66 @@ fal.config({
 // Add debug logging
 console.log('FAL API Key available:', !!FAL_API_KEY);
 
+async function downloadInstagramReel(url: string): Promise<Buffer> {
+  try {
+    const options = {
+      method: 'GET',
+      url: 'https://instagram-reels-downloader-api.p.rapidapi.com/download',
+      params: { url },
+      headers: {
+        'X-RapidAPI-Key': RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'instagram-reels-downloader-api.p.rapidapi.com'
+      }
+    };
+
+    const response = await axios.request(options);
+    console.log('RapidAPI actual response:', response.data); // For debugging
+
+    let videoUrl = null;
+    if (
+      response.data &&
+      response.data.data &&
+      Array.isArray(response.data.data.medias) &&
+      response.data.data.medias.length > 0
+    ) {
+      // Find the first media item that has a valid url
+      const videoMedia = response.data.data.medias.find(
+        (media: any) => typeof media.url === 'string' && media.url.length > 0
+      );
+      if (videoMedia) {
+        videoUrl = videoMedia.url;
+      }
+    }
+
+    if (!videoUrl) {
+      throw new Error('No video URL found in API response');
+    }
+
+    // Download the video
+    const videoResponse = await axios.get(videoUrl, { responseType: 'arraybuffer' });
+    return Buffer.from(videoResponse.data);
+  } catch (error) {
+    console.error('Error downloading Instagram reel:', error);
+    throw new Error('Failed to download Instagram reel: ' + (error instanceof Error ? error.message : String(error)));
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const videoFile = formData.get('video') as File;
+    const videoUrl = formData.get('videoUrl') as string;
     const targetLanguage = formData.get('targetLanguage') as string;
 
-    if (!videoFile) {
-      throw new Error('No video file provided');
+    if (!videoUrl) {
+      throw new Error('No video URL provided');
     }
 
     if (!FAL_API_KEY) {
       throw new Error('FAL.ai API key is not configured');
+    }
+
+    if (!RAPIDAPI_KEY) {
+      throw new Error('RapidAPI key is not configured');
     }
 
     // Create directories
@@ -50,10 +99,10 @@ export async function POST(request: Request) {
     const translatedAudioPath = path.join(outputDir, `${sessionId}_translated.mp3`);
     const finalPath = path.join(outputDir, `${sessionId}_final.mp4`);
 
-    // Save uploaded file
-    const bytes = await videoFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    fs.writeFileSync(inputPath, buffer);
+    // Download video from Instagram
+    console.log('Downloading video from Instagram...');
+    const videoBuffer = await downloadInstagramReel(videoUrl);
+    fs.writeFileSync(inputPath, videoBuffer);
 
     // Extract audio from video
     await new Promise<void>((resolve, reject) => {
@@ -171,49 +220,57 @@ export async function POST(request: Request) {
 
     fs.writeFileSync(translatedAudioPath, ttsResponse.data);
 
-    // 4. Apply lip-sync using FAL.ai
-    console.log('Applying lip-sync...');
-    try {
-      // Upload files to FAL.ai storage
-      const videoFile = new File([fs.readFileSync(inputPath)], 'input.mp4', { type: 'video/mp4' });
-      const audioFile = new File([fs.readFileSync(translatedAudioPath)], 'audio.mp3', { type: 'audio/mpeg' });
+    // Downscale to 480p and 24fps for faster FAL processing
+    const downscaledPath = path.join(tempDir, `${sessionId}_input_480p_24fps.mp4`);
+    console.log('Step: Downscaling video to 480p 24fps...');
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(inputPath)
+        .outputOptions(['-vf', 'scale=-2:480', '-r', '24'])
+        .on('end', () => resolve())
+        .on('error', reject)
+        .save(downscaledPath);
+    });
+    console.log('Step: Video downscaled to 480p 24fps.');
 
-      const videoUrl = await fal.storage.upload(videoFile);
-      const audioUrl = await fal.storage.upload(audioFile);
+    // Use downscaledPath for FAL upload
+    const videoFile = new File([fs.readFileSync(downscaledPath)], 'input.mp4', { type: 'video/mp4' });
+    const audioFile = new File([fs.readFileSync(translatedAudioPath)], 'audio.mp3', { type: 'audio/mpeg' });
 
-      // Submit lip-sync request
-      const result = await fal.subscribe("fal-ai/tavus/hummingbird-lipsync/v0", {
-        input: {
-          video_url: videoUrl,
-          audio_url: audioUrl
-        },
-        logs: true,
-        onQueueUpdate: (update: QueueStatus) => {
-          if (update.status === "IN_PROGRESS" && update.logs) {
-            update.logs.map((log) => log.message).forEach(console.log);
-          }
-        },
-      });
+    console.log('Step: Uploading to FAL...');
+    const falVideoUrl = await fal.storage.upload(videoFile);
+    const falAudioUrl = await fal.storage.upload(audioFile);
 
-      // Download the result
-      const response = await axios.get(result.data.video.url, {
-        responseType: 'arraybuffer'
-      });
-      fs.writeFileSync(finalPath, response.data);
+    console.log('Step: Submitting to FAL...');
+    const result = await fal.subscribe("fal-ai/tavus/hummingbird-lipsync/v0", {
+      input: {
+        video_url: falVideoUrl,
+        audio_url: falAudioUrl
+      },
+      logs: true,
+      onQueueUpdate: (update: QueueStatus) => {
+        if (update.status === "IN_PROGRESS" && update.logs) {
+          update.logs.map((log) => log.message).forEach(console.log);
+        }
+      },
+    });
+    console.log('Step: FAL processing complete.');
 
-      // Clean up temporary files
-      fs.unlinkSync(inputPath);
-      fs.unlinkSync(audioPath);
+    // Download the result
+    const response = await axios.get(result.data.video.url, {
+      responseType: 'arraybuffer'
+    });
+    fs.writeFileSync(finalPath, response.data);
 
-      return NextResponse.json({
-        success: true,
-        outputUrl: `/output/${sessionId}_final.mp4`,
-        message: 'Video processing completed successfully',
-      });
-    } catch (error: unknown) {
-      console.error('FAL.ai Error:', error);
-      throw new Error(error instanceof Error ? error.message : 'Failed to process lip-sync');
-    }
+    // Clean up temporary files
+    fs.unlinkSync(inputPath);
+    fs.unlinkSync(audioPath);
+    fs.unlinkSync(downscaledPath);
+
+    return NextResponse.json({
+      success: true,
+      outputUrl: `/output/${sessionId}_final.mp4`,
+      message: 'Video processing completed successfully',
+    });
   } catch (error: unknown) {
     console.error('Error processing video:', error);
     return NextResponse.json(

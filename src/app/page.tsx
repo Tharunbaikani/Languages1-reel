@@ -4,28 +4,66 @@ import { useState } from 'react';
 import { VideoForm } from '@/components/VideoForm';
 import { VideoPreview } from '@/components/VideoPreview';
 
+const PROCESS_STEPS = [
+  'Downloading video',
+  'Preprocessing (downscale)',
+  'Extracting audio',
+  'Transcribing',
+  'Translating',
+  'Text-to-speech',
+  'Uploading to FAL',
+  'Lip-syncing',
+  'Done'
+];
+
 export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [outputVideo, setOutputVideo] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [progressStep, setProgressStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (videoFile: File, targetLanguage: string) => {
+  // Helper to update progress by step
+  const updateProgressStep = (step: number) => {
+    setProgressStep(step);
+    setProgress(Math.round((step / (PROCESS_STEPS.length - 1)) * 100));
+  };
+
+  const handleSubmit = async (videoUrl: string, targetLanguage: string) => {
     setIsProcessing(true);
     setProgress(0);
+    setProgressStep(0);
     setOutputVideo(null);
     setError(null);
 
     try {
       const formData = new FormData();
-      formData.append('video', videoFile);
+      formData.append('videoUrl', videoUrl);
       formData.append('targetLanguage', targetLanguage);
+
+      // Simulate step progress (replace with real-time updates if backend supports it)
+      updateProgressStep(0); // Downloading video
+      await new Promise((res) => setTimeout(res, 800));
+      updateProgressStep(1); // Preprocessing
+      await new Promise((res) => setTimeout(res, 800));
+      updateProgressStep(2); // Extracting audio
+      await new Promise((res) => setTimeout(res, 800));
+      updateProgressStep(3); // Transcribing
+      await new Promise((res) => setTimeout(res, 800));
+      updateProgressStep(4); // Translating
+      await new Promise((res) => setTimeout(res, 800));
+      updateProgressStep(5); // Text-to-speech
+      await new Promise((res) => setTimeout(res, 800));
+      updateProgressStep(6); // Uploading to FAL
+      await new Promise((res) => setTimeout(res, 800));
+      updateProgressStep(7); // Lip-syncing
 
       const response = await fetch('/api/process', {
         method: 'POST',
         body: formData,
       });
 
+      updateProgressStep(8); // Done
       const data = await response.json();
 
       if (!response.ok) {
@@ -67,7 +105,7 @@ export default function Home() {
                 ></div>
               </div>
               <p className="text-center mt-2 text-gray-600">
-                Processing your video... {progress}%
+                {PROCESS_STEPS[progressStep]}... {progress}%
               </p>
             </div>
           )}
