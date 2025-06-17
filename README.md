@@ -31,7 +31,7 @@ A Next.js application that translates Instagram reels to different languages whi
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/RiptideStar/languages-reel.git
 cd language-reel
 ```
 
