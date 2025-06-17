@@ -15,16 +15,17 @@ A Next.js application that translates Instagram reels to different languages whi
 - Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS
-- ElevenLabs API (Speech-to-Text, Translation, Text-to-Speech)
+- OpenAI API (Whisper for transcription, GPT for translation)
+- ElevenLabs API (Text-to-Speech)
 - FAL.ai API (Lip-sync)
+- RapidAPI (Instagram Reel Downloader)
 - FFmpeg (Video processing)
-- yt-dlp (Video downloading)
 
 ## Prerequisites
 
 - Node.js 18+ and npm
 - FFmpeg installed on your system
-- API keys for ElevenLabs and FAL.ai
+- API keys for OpenAI, ElevenLabs, FAL.ai, and RapidAPI
 
 ## Setup
 
@@ -41,9 +42,10 @@ npm install
 
 3. Create a `.env.local` file in the root directory with your API keys:
 ```
+NEXT_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 ELEVENLABS_API_KEY=your_elevenlabs_api_key
 FAL_API_KEY=your_fal_api_key
-NEXT_PUBLIC_OPENAI_API_KEY`: your_OpenAI_api_key
+RAPIDAPI_KEY=your_rapidapi_key
 ```
 
 4. Create required directories:
@@ -65,17 +67,20 @@ npm run dev
 3. Import your GitHub repository
 
 4. Add the following environment variables in the Vercel project settings:
+   - `NEXT_PUBLIC_OPENAI_API_KEY`
    - `ELEVENLABS_API_KEY`
    - `FAL_API_KEY`
-   - `NEXT_PUBLIC_OPENAI_API_KEY`
+   - `RAPIDAPI_KEY`
 
 5. Deploy the project
 
 ## Environment Variables
 
-- `ELEVENLABS_API_KEY`: Your ElevenLabs API key
-- `FAL_API_KEY`: Your FAL.ai API key
-- `NEXT_PUBLIC_OPENAI_API_KEY`: Your OpenAI API key
+- `NEXT_PUBLIC_OPENAI_API_KEY`: Your OpenAI API key for transcription and translation
+- `ELEVENLABS_API_KEY`: Your ElevenLabs API key for text-to-speech
+- `FAL_API_KEY`: Your FAL.ai API key for lip-sync
+- `RAPIDAPI_KEY`: Your RapidAPI key for Instagram reel downloading
+
 ## Project Structure
 
 ```
