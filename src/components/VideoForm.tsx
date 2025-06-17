@@ -43,7 +43,6 @@ const LANGUAGES = [
 export function VideoForm({ onSubmit, isProcessing }: VideoFormProps) {
   const [videoUrl, setVideoUrl] = useState<string>('');
   const [targetLanguage, setTargetLanguage] = useState('en');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;

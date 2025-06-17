@@ -12,6 +12,20 @@ interface QueueStatus {
   logs?: Array<{ message: string }>;
 }
 
+interface InstagramMedia {
+  url: string;
+  type: string;
+}
+
+interface ElevenLabsVoice {
+  voice_id: string;
+  name: string;
+  labels: {
+    language: string;
+    gender: string;
+  };
+}
+
 const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const FAL_API_KEY = process.env.FAL_API_KEY;
@@ -49,7 +63,7 @@ async function downloadInstagramReel(url: string): Promise<Buffer> {
     ) {
       // Find the first media item that has a valid url
       const videoMedia = response.data.data.medias.find(
-        (media: any) => typeof media.url === 'string' && media.url.length > 0
+        (media: InstagramMedia) => typeof media.url === 'string' && media.url.length > 0
       );
       if (videoMedia) {
         videoUrl = videoMedia.url;
@@ -180,14 +194,14 @@ export async function POST(request: Request) {
     const voices = voicesResponse.data.voices;
     
     // First try to find a voice matching both language and gender
-    let suitableVoice = voices.find((voice: any) => 
+    let suitableVoice = voices.find((voice: ElevenLabsVoice) => 
       voice.labels.language === targetLanguage.toLowerCase() &&
       voice.labels.gender === 'male' // Default to male voice
     );
 
     // If no matching voice found, try to find any voice in the target language
     if (!suitableVoice) {
-      suitableVoice = voices.find((voice: any) => 
+      suitableVoice = voices.find((voice: ElevenLabsVoice) => 
         voice.labels.language === targetLanguage.toLowerCase()
       );
     }
