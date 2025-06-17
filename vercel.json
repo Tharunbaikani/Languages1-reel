@@ -12,5 +12,6 @@
     "env": {
       "PYTHON_VERSION": "3.9"
     }
-  }
+  },
+  "installCommand": "apt-get update && apt-get install -y python3 && npm install"
 } 
