@@ -26,9 +26,21 @@ interface ElevenLabsVoice {
   };
 }
 
+const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const FAL_API_KEY = process.env.FAL_API_KEY;
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
+
+// Configure FAL.ai client
+fal.config({
+  credentials: FAL_API_KEY
+});
+
+// Add debug logging
+console.log('FAL API Key available:', !!FAL_API_KEY);
+
 async function downloadInstagramReel(url: string): Promise<Buffer> {
   try {
-    const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
     const options = {
       method: 'GET',
       url: 'https://instagram-reels-downloader-api.p.rapidapi.com/download',
@@ -72,46 +84,6 @@ async function downloadInstagramReel(url: string): Promise<Buffer> {
 }
 
 export async function POST(request: Request) {
-  // Access environment variables inside the handler
-  const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-  const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-  const FAL_API_KEY = process.env.FAL_API_KEY;
-  const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
-
-  // Add debug logging for all API keys
-  console.log('API Keys Status:', {
-    OPENAI_API_KEY: !!OPENAI_API_KEY,
-    ELEVENLABS_API_KEY: !!ELEVENLABS_API_KEY,
-    FAL_API_KEY: !!FAL_API_KEY,
-    RAPIDAPI_KEY: !!RAPIDAPI_KEY
-  });
-
-  // Debug: Log the ElevenLabs API key and its length
-  console.log('ELEVENLABS_API_KEY:', ELEVENLABS_API_KEY, ELEVENLABS_API_KEY?.length);
-
-  // Debug: Test ElevenLabs API key directly
-  try {
-    const test = await axios.get(
-      'https://api.elevenlabs.io/v1/voices',
-      {
-        headers: {
-          'xi-api-key': ELEVENLABS_API_KEY,
-        },
-      }
-    );
-    console.log('Test ElevenLabs response:', test.data);
-  } catch (err: any) {
-    console.error('Test ElevenLabs error:', err?.response?.status, err?.response?.data || err);
-  }
-
-  // Configure FAL.ai client
-  if (!FAL_API_KEY) {
-    throw new Error('FAL_API_KEY is not configured in environment variables');
-  }
-  fal.config({
-    credentials: FAL_API_KEY
-  });
-
   try {
     const formData = await request.formData();
     const videoUrl = formData.get('videoUrl') as string;
@@ -127,14 +99,6 @@ export async function POST(request: Request) {
 
     if (!RAPIDAPI_KEY) {
       throw new Error('RapidAPI key is not configured');
-    }
-
-    if (!ELEVENLABS_API_KEY) {
-      throw new Error('ElevenLabs API key is not configured');
-    }
-
-    if (!OPENAI_API_KEY) {
-      throw new Error('OpenAI API key is not configured');
     }
 
     // Create directories
