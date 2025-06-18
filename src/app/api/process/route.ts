@@ -31,13 +31,21 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const FAL_API_KEY = process.env.FAL_API_KEY;
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
 
+// Add debug logging for all API keys
+console.log('API Keys Status:', {
+  OPENAI_API_KEY: !!OPENAI_API_KEY,
+  ELEVENLABS_API_KEY: !!ELEVENLABS_API_KEY,
+  FAL_API_KEY: !!FAL_API_KEY,
+  RAPIDAPI_KEY: !!RAPIDAPI_KEY
+});
+
 // Configure FAL.ai client
+if (!FAL_API_KEY) {
+  throw new Error('FAL_API_KEY is not configured in environment variables');
+}
 fal.config({
   credentials: FAL_API_KEY
 });
-
-// Add debug logging
-console.log('FAL API Key available:', !!FAL_API_KEY);
 
 async function downloadInstagramReel(url: string): Promise<Buffer> {
   try {
@@ -99,6 +107,14 @@ export async function POST(request: Request) {
 
     if (!RAPIDAPI_KEY) {
       throw new Error('RapidAPI key is not configured');
+    }
+
+    if (!ELEVENLABS_API_KEY) {
+      throw new Error('ElevenLabs API key is not configured');
+    }
+
+    if (!OPENAI_API_KEY) {
+      throw new Error('OpenAI API key is not configured');
     }
 
     // Create directories
