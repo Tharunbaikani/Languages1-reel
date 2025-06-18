@@ -86,6 +86,24 @@ export async function POST(request: Request) {
     RAPIDAPI_KEY: !!RAPIDAPI_KEY
   });
 
+  // Debug: Log the ElevenLabs API key and its length
+  console.log('ELEVENLABS_API_KEY:', ELEVENLABS_API_KEY, ELEVENLABS_API_KEY?.length);
+
+  // Debug: Test ElevenLabs API key directly
+  try {
+    const test = await axios.get(
+      'https://api.elevenlabs.io/v1/voices',
+      {
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+        },
+      }
+    );
+    console.log('Test ElevenLabs response:', test.data);
+  } catch (err: any) {
+    console.error('Test ElevenLabs error:', err?.response?.status, err?.response?.data || err);
+  }
+
   // Configure FAL.ai client
   if (!FAL_API_KEY) {
     throw new Error('FAL_API_KEY is not configured in environment variables');
