@@ -12,7 +12,7 @@ A Next.js application that translates Instagram reels to different languages whi
 
 ## Tech Stack
 
-- Next.js 14 (App Router)
+- Next.js 15 (App Router)
 - TypeScript
 - Tailwind CSS
 - OpenAI API (Whisper for transcription, GPT for translation)
@@ -24,14 +24,13 @@ A Next.js application that translates Instagram reels to different languages whi
 ## Prerequisites
 
 - Node.js 18+ and npm
-- FFmpeg installed on your system
 - API keys for OpenAI, ElevenLabs, FAL.ai, and RapidAPI
 
-## Setup
+## Setup (Local Development)
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/RiptideStar/languages-reel.git
+git clone https://github.com/yourusername/language-reel.git
 cd language-reel
 ```
 
@@ -41,7 +40,7 @@ npm install
 ```
 
 3. Create a `.env.local` file in the root directory with your API keys:
-```
+```env
 NEXT_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 ELEVENLABS_API_KEY=your_elevenlabs_api_key
 FAL_API_KEY=your_fal_api_key
@@ -58,21 +57,18 @@ mkdir -p public/output tmp
 npm run dev
 ```
 
-## Deployment to Vercel
+## Deployment to Railway
 
-1. Push your code to a GitHub repository
-
-2. Go to [Vercel](https://vercel.com) and create a new project
-
-3. Import your GitHub repository
-
-4. Add the following environment variables in the Vercel project settings:
+1. **Push your code to a GitHub repository.**
+2. **Create a new project on [Railway](https://railway.app/).**
+3. **Connect your GitHub repository to Railway.**
+4. **Set the following environment variables in the Railway dashboard (no quotes, no spaces):**
    - `NEXT_PUBLIC_OPENAI_API_KEY`
    - `ELEVENLABS_API_KEY`
    - `FAL_API_KEY`
    - `RAPIDAPI_KEY`
-
-5. Deploy the project
+5. **Deploy the project.** Railway will use the included `Dockerfile` for deployment.
+6. **After deployment, your app will be live at the Railway-provided URL.**
 
 ## Environment Variables
 
@@ -97,6 +93,14 @@ language-reel/
 ├── public/
 │   └── output/
 ├── tmp/
-└── .env.local
+├── Dockerfile
+├── railway.json
+└── .env.local (local only)
 ```
+
+## Notes
+- **Do not use quotes or spaces in Railway environment variable values.**
+- **If you change environment variables, redeploy your Railway project.**
+- **FFmpeg is installed automatically via the Dockerfile.**
+- For any issues, check Railway logs for error details.
 
