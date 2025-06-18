@@ -247,12 +247,12 @@ export async function POST(request: Request) {
     console.log('Step: Video downscaled to 480p 24fps.');
 
     // Use downscaledPath for FAL upload
-    const videoFile = new File([fs.readFileSync(downscaledPath)], 'input.mp4', { type: 'video/mp4' });
-    const audioFile = new File([fs.readFileSync(translatedAudioPath)], 'audio.mp3', { type: 'audio/mpeg' });
+    const videoData = fs.readFileSync(downscaledPath);
+    const audioData = fs.readFileSync(translatedAudioPath);
 
     console.log('Step: Uploading to FAL...');
-    const falVideoUrl = await fal.storage.upload(videoFile);
-    const falAudioUrl = await fal.storage.upload(audioFile);
+    const falVideoUrl = await fal.storage.upload(new Blob([videoData], { type: 'video/mp4' }));
+    const falAudioUrl = await fal.storage.upload(new Blob([audioData], { type: 'audio/mpeg' }));
 
     console.log('Step: Submitting to FAL...');
     const result = await fal.subscribe("fal-ai/tavus/hummingbird-lipsync/v0", {
