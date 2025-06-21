@@ -102,5 +102,5 @@ language-reel/
 - **Do not use quotes or spaces in Railway environment variable values.**
 - **If you change environment variables, redeploy your Railway project.**
 - **FFmpeg is installed automatically via the Dockerfile.**
-- For any issues, check Railway logs for error details.
+
 
